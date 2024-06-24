@@ -1,0 +1,46 @@
+**Remove CBS.log from C:\Windows\Logs
+
+Run following script:
+
+@echo off
+setlocal
+
+REM Author: Gevorg Tymoteusz Jemendzan Karen's
+
+:: Disable Windows Update and Windows Module Installer services
+sc config wuauserv start= disabled
+sc config TrustedInstaller start= disabled
+
+:: Stop the services
+net stop wuauserv /y
+net stop TrustedInstaller /y
+
+:: Kill Windows Module Installer process
+taskkill /f /im TrustedInstaller.exe
+
+:: Delete the CBS log folder
+set CBS_FOLDER=%windir%\Logs\CBS
+
+if exist "%CBS_FOLDER%" (
+   rmdir /s /q "%CBS_FOLDER%"
+   if not exist "%CBS_FOLDER%" (
+       echo CBS log folder removed successfully.
+
+       :: Re-enable Windows Update and Windows Module Installer services
+       sc config wuauserv start= auto
+       sc config TrustedInstaller start= auto
+
+       :: Start the services
+       net start wuauserv
+       net start TrustedInstaller
+
+       echo Services re-enabled and started successfully.
+   ) else (
+       echo Failed to remove CBS log folder.
+   )
+) else (
+   echo CBS log folder does not exist.
+)
+
+endlocal
+pause
